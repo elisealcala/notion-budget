@@ -1,3 +1,4 @@
+import { DocsSidebarNav } from '@/components/app/sidebar-nav'
 import './globals.css'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
@@ -14,9 +15,19 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  const items = [
+    {
+      title: "Expenses",
+      href: "/expenses"
+    }
+  ]
+
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <DocsSidebarNav items={items} />
+        <main>{children}</main>
+      </body>
     </html>
   )
 }
