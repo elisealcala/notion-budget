@@ -5,9 +5,9 @@ import {
 } from "@notionhq/client/build/src/api-endpoints";
 import { Account } from "./account";
 
-export type Properties = "Amount" | "Category" | "Paid" | "Date" | "Account" | "Name";
+export type Properties = "Amount" | "Category" | "Date" | "Account" | "Name";
 
-export interface Expense extends PageObjectResponse {
+export interface Income extends PageObjectResponse {
   properties: Record<
     Properties,
     PageObjectResponse["properties"][keyof PageObjectResponse["properties"]]
@@ -16,6 +16,6 @@ export interface Expense extends PageObjectResponse {
   category?: Category;
 }
 
-export interface QueryResponseExpense extends QueryDatabaseResponse {
-  results: Expense[];
+export interface QueryResponseIncome extends QueryDatabaseResponse {
+  results: Income[];
 }

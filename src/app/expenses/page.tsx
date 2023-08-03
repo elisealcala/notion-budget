@@ -1,47 +1,50 @@
-import AppDialog from '@/components/app/dialog';
-import { isFullPage, Client, LogLevel } from '@notionhq/client';
-import { NextResponse } from 'next/server';
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Expense, QueryResponseExpense } from '@/types/expense';
+} from "@/components/ui/table";
+import { Expense, QueryResponseExpense } from "@/types/expense";
+import { Button } from "@/components/ui/button";
 
-async function getData() {
-  const notion = new Client({
-    auth: process.env.NOTION_TOKEN,
-    logLevel: LogLevel.DEBUG,
-  });
+export default function Home() {
+  const [data, setData] = useState<QueryResponseExpense | undefined>();
 
-  let response;
+  const getFirstItems = useCallback(async () => {
+    let url = "http://localhost:3000/api/expenses";
 
-  const fullOrPartialPages = await notion.databases.query({
-    database_id: '98f68b650d544c6697e75b47e067c3cb',
-  });
+    const data = await fetch(url);
 
-  const accounts = await notion.databases.query({
-    database_id: '70129f242df34bf9822c71b75bfa72da',
-  });
+    const response: QueryResponseExpense = await data.json();
 
-  for (const page of fullOrPartialPages.results) {
-    if (isFullPage(page)) {
-      response = {
-        ...fullOrPartialPages,
-        results: fullOrPartialPages.results as Expense[],
-      };
+    setData(response);
+  }, []);
+
+  const handleData = useCallback(async (startCursor?: string | null) => {
+    let url = "http://localhost:3000/api/expenses";
+
+    if (startCursor) {
+      url = url += `?start_cursor=${startCursor}`;
     }
-  }
 
-  return response;
-}
+    const data = await fetch(url);
 
-export default async function Home() {
-  const data = await getData();
+    const response: QueryResponseExpense = await data.json();
+
+    setData((previousData) => ({
+      ...response,
+      results: [...(previousData?.results ?? []), ...response.results],
+    }));
+  }, []);
+
+  useEffect(() => {
+    getFirstItems();
+  }, [getFirstItems]);
 
   if (!data) {
     return <span>loading</span>;
@@ -50,7 +53,6 @@ export default async function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       <Table>
-        <TableCaption>A list of your recent invoices.</TableCaption>
         <TableHeader>
           <TableRow>
             <TableHead>Date</TableHead>
@@ -65,40 +67,42 @@ export default async function Home() {
           {data.results.map((item: Expense) => (
             <TableRow key={item.id}>
               <TableCell>
-                {item.properties['Date'].type === 'date'
-                  ? item.properties['Date'].date?.start
-                  : ''}
+                {item.properties["Date"].type === "date"
+                  ? item.properties["Date"].date?.start
+                  : ""}
               </TableCell>
               <TableCell>
-                {item.properties['Name'].type === 'title'
-                  ? item.properties['Name'].title[0].plain_text
-                  : ''}
+                {item.properties["Name"].type === "title"
+                  ? item.properties["Name"].title[0].plain_text
+                  : ""}
               </TableCell>
               <TableCell>
-                {item.properties['Amount'].type === 'number'
-                  ? item.properties['Amount'].number?.toFixed(2)
-                  : ''}
+                {item.properties["Amount"].type === "number"
+                  ? item.properties["Amount"].number?.toFixed(2)
+                  : ""}
               </TableCell>
               <TableCell>
-                {item.properties['Paid'].type === 'status'
-                  ? item.properties['Paid'].status?.name
-                  : ''}
+                {item.properties["Paid"].type === "status"
+                  ? item.properties["Paid"].status?.name
+                  : ""}
               </TableCell>
               <TableCell>
-                {item.properties['Account'].type === 'relation'
-                  ? item.properties['Account'].relation[0].id
-                  : ''}
+                {item.account?.properties["Name"].type === "title"
+                  ? item.account?.properties["Name"].title[0].plain_text
+                  : ""}
               </TableCell>
               <TableCell>
-                {item.properties['Category'].type === 'relation'
-                  ? item.properties['Category'].relation[0].id
-                  : ''}
+                {item.category?.properties["Name"].type === "title"
+                  ? item.category?.properties["Name"].title[0].plain_text
+                  : ""}
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
-      {/* <AppDialog /> */}
+      {data.next_cursor && (
+        <Button onClick={() => handleData(data.next_cursor)}>Load more</Button>
+      )}
     </main>
   );
 }
