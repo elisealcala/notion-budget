@@ -16,7 +16,7 @@ export default function Home() {
   const [data, setData] = useState<QueryResponseExpense | undefined>();
 
   const getFirstItems = useCallback(async () => {
-    let url = "http://localhost:3000/api/expenses";
+    let url = `${process.env.NEXT_PUBLIC_API}/expenses`;
 
     const data = await fetch(url);
 
@@ -26,7 +26,7 @@ export default function Home() {
   }, []);
 
   const handleData = useCallback(async (startCursor?: string | null) => {
-    let url = "http://localhost:3000/api/expenses";
+    let url = `${process.env.NEXT_PUBLIC_API}/expenses`;
 
     if (startCursor) {
       url = url += `?start_cursor=${startCursor}`;
