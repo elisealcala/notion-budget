@@ -16,43 +16,43 @@ const notion = new Client({
   logLevel: LogLevel.DEBUG,
 });
 
-export async function getPage(id: string) {
-  const response = await notion.pages.retrieve({
-    page_id: id,
-  });
+// export async function getPage(id: string) {
+//   const response = await notion.pages.retrieve({
+//     page_id: id,
+//   });
 
-  return response;
-}
+//   return response;
+// }
 
-export async function fillProperty(
-  account: Account,
-  property: Properties
-): Promise<Account> {
-  return {
-    ...account,
-    properties: {
-      ...account.properties,
-      ...(account.properties[property].type === "relation"
-        ? {
-            [property]: {
-              ...account.properties[property],
-              relation: await Promise.all(
-                (account.properties[property] as Relation).relation.map(
-                  async ({ id }) => {
-                    const response = await notion.pages.retrieve({
-                      page_id: id,
-                    });
+// export async function fillProperty(
+//   account: Account,
+//   property: Properties
+// ): Promise<Account> {
+//   return {
+//     ...account,
+//     properties: {
+//       ...account.properties,
+//       ...(account.properties[property].type === "relation"
+//         ? {
+//             [property]: {
+//               ...account.properties[property],
+//               relation: await Promise.all(
+//                 (account.properties[property] as Relation).relation.map(
+//                   async ({ id }) => {
+//                     const response = await notion.pages.retrieve({
+//                       page_id: id,
+//                     });
 
-                    return response;
-                  }
-                )
-              ),
-            },
-          }
-        : {}),
-    },
-  };
-}
+//                     return response;
+//                   }
+//                 )
+//               ),
+//             },
+//           }
+//         : {}),
+//     },
+//   };
+// }
 
 export async function GET(request: NextRequest) {
   const startCursor = request.nextUrl.searchParams.get("start_cursor") ?? undefined;
