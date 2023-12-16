@@ -10,3 +10,10 @@ export const queryDatabase = async (
     ...options,
   });
 };
+
+export const getPage = async (pageId: string, filterProperties?: string[]) => {
+  return await notion.pages.retrieve({
+    page_id: pageId,
+    filter_properties: filterProperties,
+  });
+};
