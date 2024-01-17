@@ -1,5 +1,33 @@
 import notion from "./notion-client";
-import { QueryDatabaseParameters } from "@notionhq/client/build/src/api-endpoints";
+import {
+  PageObjectResponse,
+  QueryDatabaseParameters,
+} from "@notionhq/client/build/src/api-endpoints";
+
+export const emptyPageObjectResponse: PageObjectResponse = {
+  parent: {
+    type: "workspace",
+    workspace: true,
+  },
+  properties: {},
+  icon: null,
+  cover: null,
+  created_by: {
+    object: "user",
+    id: "",
+  },
+  last_edited_by: {
+    object: "user",
+    id: "",
+  },
+  object: "page",
+  id: "",
+  created_time: "",
+  last_edited_time: "",
+  archived: false,
+  url: "",
+  public_url: null,
+};
 
 export const queryDatabase = async (
   databaseId: string,

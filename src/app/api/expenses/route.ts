@@ -66,23 +66,23 @@ export async function GET(request: NextRequest) {
       response = {
         ...fullOrPartialPages,
         results: (fullOrPartialPages.results as Expense[]).map((result) => {
-          const accountId =
-            result.properties["Account"].type === "relation"
-              ? result.properties["Account"].relation[0].id
-              : "";
-          const categoryId =
-            result.properties["Category"].type === "relation"
-              ? result.properties["Category"].relation[0].id
-              : "";
+          // const accountId =
+          //   result.properties["Account"].type === "relation"
+          //     ? result.properties["Account"].relation[0].id
+          //     : "";
+          // const categoryId =
+          //   result.properties["Category"].type === "relation"
+          //     ? result.properties["Category"].relation[0].id
+          //     : "";
 
           return {
             ...result,
-            account: (accounts.results as Account[]).find(
-              (item) => item.id === accountId
-            ),
-            category: (categories.results as Category[]).find(
-              (item) => item.id === categoryId
-            ),
+            // account: (accounts.results as Account[]).find(
+            //   (item) => item.id === accountId
+            // ),
+            // category: (categories.results as Category[]).find(
+            //   (item) => item.id === categoryId
+            // ),
           };
         }),
       };

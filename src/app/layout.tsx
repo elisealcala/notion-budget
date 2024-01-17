@@ -13,8 +13,12 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const items = [
     {
-      title: "Dashboard",
+      title: "Finances",
       items: [
+        {
+          title: "Home",
+          href: "/",
+        },
         {
           title: "Expenses",
           href: "/expenses",
@@ -38,12 +42,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className={inter.className}>
-        <div className="container flex-1">
+        <div className="flex-1">
           <main className="flex-1 md:grid md:grid-cols-[220px_1fr] md:gap-6 lg:grid-cols-[240px_1fr] lg:gap-10">
-            <aside className="fixed top-14 z-30 hidden h-[calc(100vh-3.5rem)] w-full shrink-0 overflow-y-auto border-r py-6 pr-2 md:sticky md:block lg:py-10">
+            <aside className="fixed top-0 z-30 hidden h-screen w-full shrink-0 overflow-y-auto border-r py-6 px-2 md:sticky md:block lg:py-10">
               <DocsSidebarNav items={items} />
             </aside>
-            <div>{children}</div>
+            <div className="pt-10">{children}</div>
           </main>
         </div>
       </body>

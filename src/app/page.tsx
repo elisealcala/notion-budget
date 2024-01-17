@@ -1,59 +1,75 @@
-import AppDialog from "@/components/app/dialog"
-import { isFullPage, Client, LogLevel } from "@notionhq/client";
-import { NextResponse } from "next/server";
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@/components/ui/table";
+import { getPage } from "@/lib/notion-utils";
+import { Expense } from "@/types/expense";
+import { Month } from "@/types/month";
+import { QueryResponseYear } from "@/types/year";
+import { formatCurrency } from "@/utils/currency";
+import { getCurrentYearAndMonth } from "@/utils/date";
 
+async function getMonth(): Promise<Month> {
+  const { year } = getCurrentYearAndMonth();
 
+  let yearUrl = `${process.env.NEXT_PUBLIC_API}/years`;
 
+  const yearResponse = await fetch(yearUrl);
 
-async function getData() {
-  const notion = new Client({
-    auth: process.env.NOTION_TOKEN,
-    logLevel: LogLevel.DEBUG,
-  })
+  const years: QueryResponseYear = await yearResponse.json();
 
-  const fullOrPartialPages = await notion.databases.query({
-    database_id: "98f68b650d544c6697e75b47e067c3cb",
-  })
- 
-  return fullOrPartialPages
+  const month = years.results[0].properties.Months.relation[0];
+
+  let url = `${process.env.NEXT_PUBLIC_API}/months?id=${month.id}`;
+
+  const data = await fetch(url);
+
+  const response = data.json();
+
+  return response;
 }
 
 export default async function Home() {
-  const data = await getData()
-
-  console.log({ data })
+  const month = await getMonth();
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <Table>
-        <TableCaption>A list of your recent invoices.</TableCaption>
+    <main>
+      <h2 className="text-xl font-bold">{month.properties.Name.title[0].plain_text}</h2>
+      <Table className="mt-10">
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[100px]">Invoice</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Method</TableHead>
-            <TableHead className="text-right">Amount</TableHead>
+            <TableHead>Date</TableHead>
+            <TableHead>Name</TableHead>
+            <TableHead>Amount</TableHead>
+            <TableHead>Account</TableHead>
+            <TableHead>Category</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          <TableRow>
-            <TableCell className="font-medium">INV001</TableCell>
-            <TableCell>Paid</TableCell>
-            <TableCell>Credit Card</TableCell>
-            <TableCell className="text-right">$250.00</TableCell>
-          </TableRow>
+          {month.properties["Expenses Relation"].relation.map((expense) => (
+            <TableRow key={expense.id}>
+              <TableCell>{expense.properties.Date.date?.start}</TableCell>
+              <TableCell>{expense.properties.Name.title[0].plain_text}</TableCell>
+              <TableCell>{expense.properties.Amount.number}</TableCell>
+              <TableCell>{expense.properties.Amount.number}</TableCell>
+              <TableCell>{expense.properties.Amount.number}</TableCell>
+            </TableRow>
+          ))}
+          {month.properties["Incomes Relation"].relation.map((income) => (
+            <TableRow key={income.id}>
+              <TableCell>{income.properties.Date.date?.start}</TableCell>
+              <TableCell>{income.properties.Name.title[0].plain_text}</TableCell>
+              <TableCell>{income.properties.Amount.number}</TableCell>
+              <TableCell>{income.properties.Amount.number}</TableCell>
+              <TableCell>{income.properties.Amount.number}</TableCell>
+            </TableRow>
+          ))}
         </TableBody>
       </Table>
-      {/* <AppDialog /> */}
     </main>
-  )
+  );
 }

@@ -1,3 +1,4 @@
+import { MonthPage } from "@/app/api/years/route";
 import {
   PageObjectResponse,
   QueryDatabaseResponse,
@@ -8,15 +9,58 @@ export type Properties = "Expenses" | "Savings" | "Months" | "Incomes";
 
 export interface Year extends PageObjectResponse {
   properties: Record<
-    Properties,
-    PageObjectResponse["properties"][keyof PageObjectResponse["properties"]]
+    "Name",
+    {
+      type: "title";
+      title: Array<RichTextItemResponse>;
+      id: string;
+    }
   > &
     Record<
-      "Name",
+      "Savings",
       {
-        type: "title";
-        title: Array<RichTextItemResponse>;
         id: string;
+        type: "rollup";
+        rollup: {
+          type: "number";
+          number: number | null;
+          function: "sum";
+        };
+      }
+    > &
+    Record<
+      "Incomes",
+      {
+        id: string;
+        type: "rollup";
+        rollup: {
+          type: "number";
+          number: number | null;
+          function: "sum";
+        };
+      }
+    > &
+    Record<
+      "Expenses",
+      {
+        id: string;
+        type: "rollup";
+        rollup: {
+          type: "number";
+          number: number | null;
+          function: "sum";
+        };
+      }
+    > &
+    Record<
+      "Months",
+      {
+        id: string;
+        type: "relation";
+        relation: Array<{
+          id: string;
+          month: MonthPage;
+        }>;
       }
     >;
 }
