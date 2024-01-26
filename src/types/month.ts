@@ -9,6 +9,8 @@ import { Transfer } from "./transfer";
 
 export type Properties = "Expenses" | "Savings" | "Months" | "Incomes";
 
+export type Movement = Expense | Transfer | Income;
+
 export interface Month extends PageObjectResponse {
   properties: Record<
     "Name",
@@ -48,6 +50,14 @@ export interface Month extends PageObjectResponse {
         type: "relation";
         id: string;
         relation: Transfer[];
+      }
+    > &
+    Record<
+      "Movements",
+      {
+        type: "relation";
+        id: string;
+        relation: Movement[];
       }
     >;
 }

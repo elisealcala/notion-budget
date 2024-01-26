@@ -36,9 +36,40 @@ export interface Income extends PageObjectResponse {
         number: number | null;
         id: string;
       }
+    > &
+    Record<
+      "Account Name",
+      {
+        type: "rollup";
+        id: string;
+        rollup: {
+          type: "array";
+          array: Array<{
+            type: "title";
+            title: Array<RichTextItemResponse>;
+            id: string;
+          }>;
+          function: "show_original";
+        };
+      }
+    > &
+    Record<
+      "Category Name",
+      {
+        type: "rollup";
+        id: string;
+        rollup: {
+          type: "array";
+          array: Array<{
+            type: "title";
+            title: Array<RichTextItemResponse>;
+            id: string;
+          }>;
+          function: "show_original";
+        };
+      }
     >;
-  account?: Account;
-  category?: Category;
+  type: "income";
 }
 
 export interface QueryResponseIncome extends QueryDatabaseResponse {

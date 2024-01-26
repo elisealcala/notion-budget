@@ -1,93 +1,64 @@
-import { Account } from "@/types/account";
-import { Category } from "@/types/category";
-import { Expense, QueryResponseExpense } from "@/types/expense";
-import { isFullPage, Client, LogLevel } from "@notionhq/client";
+import { queryDatabase } from "@/lib/notion-utils";
 import { QueryDatabaseParameters } from "@notionhq/client/build/src/api-endpoints";
 import { NextRequest, NextResponse } from "next/server";
-
-const notion = new Client({
-  auth: process.env.NOTION_TOKEN,
-  logLevel: LogLevel.DEBUG,
-});
 
 export async function GET(request: NextRequest) {
   const startCursor = request.nextUrl.searchParams.get("start_cursor") ?? undefined;
   const dateAfter = request.nextUrl.searchParams.get("date_after") ?? undefined;
   const dateBefore = request.nextUrl.searchParams.get("date_before") ?? undefined;
+  const monthId = request.nextUrl.searchParams.get("month_id") ?? undefined;
 
-  let response: QueryResponseExpense | undefined;
+  const expenseDatabase = process.env.NOTION_EXPENSES_DATABASE as string;
 
-  let options: QueryDatabaseParameters = {
-    database_id: "98f68b650d544c6697e75b47e067c3cb",
+  let options: Omit<QueryDatabaseParameters, "database_id"> = {
     sorts: [
       {
         property: "Date",
-        direction: "ascending",
+        direction: "descending",
       },
       {
         property: "Name",
-        direction: "ascending",
+        direction: "descending",
       },
     ],
   };
 
-  if (dateAfter && dateBefore) {
-    options = {
-      ...options,
-      filter: {
-        property: "Date",
-        date: {
-          after: dateAfter,
-          before: dateBefore,
-        },
+  if (monthId) {
+    const monthFilter = {
+      property: "Month",
+      relation: {
+        contains: monthId,
       },
     };
+
+    if (options.filter && "and" in options.filter) {
+      options.filter.and.push(monthFilter);
+    } else {
+      options.filter = { and: [monthFilter] } as any;
+    }
+  }
+
+  if (dateAfter && dateBefore) {
+    const dateFilter = {
+      property: "Date",
+      date: {
+        after: dateAfter,
+        before: dateBefore,
+      },
+    };
+
+    if (options.filter && "and" in options.filter) {
+      options.filter.and.push(dateFilter);
+    } else {
+      options.filter = { and: [dateFilter] };
+    }
   }
 
   if (startCursor) {
-    options = {
-      ...options,
-      start_cursor: startCursor,
-    };
+    options.start_cursor = startCursor;
   }
 
-  const fullOrPartialPages = await notion.databases.query(options);
-
-  const accounts = await notion.databases.query({
-    database_id: "70129f242df34bf9822c71b75bfa72da",
-  });
-
-  const categories = await notion.databases.query({
-    database_id: "81cc68bbce9d4187a5ed3c52c950d8b8",
-  });
-
-  for (const page of fullOrPartialPages.results) {
-    if (isFullPage(page)) {
-      response = {
-        ...fullOrPartialPages,
-        results: (fullOrPartialPages.results as Expense[]).map((result) => {
-          // const accountId =
-          //   result.properties["Account"].type === "relation"
-          //     ? result.properties["Account"].relation[0].id
-          //     : "";
-          // const categoryId =
-          //   result.properties["Category"].type === "relation"
-          //     ? result.properties["Category"].relation[0].id
-          //     : "";
-
-          return {
-            ...result,
-            // account: (accounts.results as Account[]).find(
-            //   (item) => item.id === accountId
-            // ),
-            // category: (categories.results as Category[]).find(
-            //   (item) => item.id === categoryId
-            // ),
-          };
-        }),
-      };
-    }
-  }
+  let response = await queryDatabase(expenseDatabase, options);
 
   return NextResponse.json(response);
 }
