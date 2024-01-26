@@ -6,16 +6,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getPage } from "@/lib/notion-utils";
-import { Expense } from "@/types/expense";
 import { Month } from "@/types/month";
 import { QueryResponseYear } from "@/types/year";
 import { formatCurrency } from "@/utils/currency";
-import { getCurrentYearAndMonth } from "@/utils/date";
 
 async function getMonth(): Promise<Month> {
-  const { year } = getCurrentYearAndMonth();
-
   let yearUrl = `${process.env.NEXT_PUBLIC_API}/years`;
 
   const yearResponse = await fetch(yearUrl);
@@ -50,24 +45,81 @@ export default async function Home() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {month.properties["Expenses Relation"].relation.map((expense) => (
-            <TableRow key={expense.id}>
-              <TableCell>{expense.properties.Date.date?.start}</TableCell>
-              <TableCell>{expense.properties.Name.title[0].plain_text}</TableCell>
-              <TableCell>{expense.properties.Amount.number}</TableCell>
-              <TableCell>{expense.properties.Amount.number}</TableCell>
-              <TableCell>{expense.properties.Amount.number}</TableCell>
-            </TableRow>
-          ))}
-          {month.properties["Incomes Relation"].relation.map((income) => (
-            <TableRow key={income.id}>
-              <TableCell>{income.properties.Date.date?.start}</TableCell>
-              <TableCell>{income.properties.Name.title[0].plain_text}</TableCell>
-              <TableCell>{income.properties.Amount.number}</TableCell>
-              <TableCell>{income.properties.Amount.number}</TableCell>
-              <TableCell>{income.properties.Amount.number}</TableCell>
-            </TableRow>
-          ))}
+          {month.properties["Movements"].relation.map((movement) => {
+            switch (movement.type) {
+              case "expense":
+                return (
+                  <TableRow key={movement.id}>
+                    <TableCell>{movement.properties.Date.date?.start}</TableCell>
+                    <TableCell>{movement.properties.Name.title[0].plain_text}</TableCell>
+                    <TableCell>
+                      - {formatCurrency(movement.properties.Amount.number ?? 0)}
+                    </TableCell>
+                    <TableCell>
+                      {
+                        movement.properties["Account Name"].rollup.array[0]?.title[0]
+                          .plain_text
+                      }
+                    </TableCell>
+                    <TableCell>
+                      {
+                        movement.properties["Category Name"].rollup.array[0]?.title[0]
+                          .plain_text
+                      }
+                    </TableCell>
+                  </TableRow>
+                );
+
+              case "income":
+                return (
+                  <TableRow key={movement.id}>
+                    <TableCell>{movement.properties.Date.date?.start}</TableCell>
+                    <TableCell>{movement.properties.Name.title[0].plain_text}</TableCell>
+                    <TableCell>
+                      {formatCurrency(movement.properties.Amount.number ?? 0)}
+                    </TableCell>
+                    <TableCell>
+                      {
+                        movement.properties["Account Name"].rollup.array[0]?.title[0]
+                          .plain_text
+                      }
+                    </TableCell>
+                    <TableCell>
+                      {
+                        movement.properties["Category Name"].rollup.array[0]?.title[0]
+                          .plain_text
+                      }
+                    </TableCell>
+                  </TableRow>
+                );
+
+              case "transfer":
+                return (
+                  <TableRow key={movement.id}>
+                    <TableCell>{movement.properties.Date.date?.start}</TableCell>
+                    <TableCell>{movement.properties.Name.title[0].plain_text}</TableCell>
+                    <TableCell>
+                      {formatCurrency(movement.properties.Amount.number ?? 0)}
+                    </TableCell>
+                    <TableCell>
+                      {
+                        movement.properties["From Account Name"].rollup.array[0]?.title[0]
+                          .plain_text
+                      }{" "}
+                      →{" "}
+                      {
+                        movement.properties["To Account Name"].rollup.array[0]?.title[0]
+                          .plain_text
+                      }
+                    </TableCell>
+                    <TableCell></TableCell>
+                  </TableRow>
+                );
+
+              default:
+                return null;
+            }
+          })}
         </TableBody>
       </Table>
     </main>
