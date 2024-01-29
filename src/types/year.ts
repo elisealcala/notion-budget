@@ -1,4 +1,3 @@
-import { MonthPage } from "@/app/api/years/route";
 import {
   PageObjectResponse,
   QueryDatabaseResponse,
@@ -55,12 +54,27 @@ export interface Year extends PageObjectResponse {
     Record<
       "Months",
       {
-        id: string;
         type: "relation";
         relation: Array<{
           id: string;
-          month: MonthPage;
         }>;
+        id: string;
+      }
+    > &
+    Record<
+      "Month Names",
+      {
+        type: "rollup";
+        id: string;
+        rollup: {
+          type: "array";
+          array: Array<{
+            type: "title";
+            title: Array<RichTextItemResponse>;
+            id: string;
+          }>;
+          function: "show_original";
+        };
       }
     >;
 }

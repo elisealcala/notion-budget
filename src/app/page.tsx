@@ -7,19 +7,23 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Month } from "@/types/month";
-import { QueryResponseYear } from "@/types/year";
+import { QueryResponseYear, Year } from "@/types/year";
 import { formatCurrency } from "@/utils/currency";
 
 async function getMonth(): Promise<Month> {
-  let yearUrl = `${process.env.NEXT_PUBLIC_API}/years`;
+  const yearsResponse = await fetch(`${process.env.NEXT_PUBLIC_API}/years`);
 
-  const yearResponse = await fetch(yearUrl);
+  const years: QueryResponseYear = await yearsResponse.json();
 
-  const years: QueryResponseYear = await yearResponse.json();
+  const yearId = years.results[0].id;
 
-  const month = years.results[0].properties.Months.relation[0];
+  const yearReponse = await fetch(`${process.env.NEXT_PUBLIC_API}/years/${yearId}`);
 
-  let url = `${process.env.NEXT_PUBLIC_API}/months?id=${month.id}`;
+  const year: Year = await yearReponse.json();
+
+  const monthId = year.properties["Months"].relation[0].id;
+
+  let url = `${process.env.NEXT_PUBLIC_API}/years/${yearId}/${monthId}`;
 
   const data = await fetch(url);
 

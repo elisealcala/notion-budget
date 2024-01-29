@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   PageObjectResponse,
-  QueryDatabaseParameters,
   QueryDatabaseResponse,
 } from "@notionhq/client/build/src/api-endpoints";
-import { emptyPageObjectResponse, getPage, queryDatabase } from "@/lib/notion-utils";
+import { emptyPageObjectResponse, getPage } from "@/lib/notion-utils";
 import { isFullPage } from "@notionhq/client";
 import { Month, Movement } from "@/types/month";
 import { Expense } from "@/types/expense";
@@ -12,11 +11,10 @@ import { Income } from "@/types/income";
 import { Transfer } from "@/types/transfer";
 
 export async function GET(
-  request: NextRequest
+  request: NextRequest,
+  { params }: { params: { "month-id": string } }
 ): Promise<NextResponse<PageObjectResponse>> {
-  const monthId = request.nextUrl.searchParams.get("id") ?? "";
-
-  const transfersDatabase = process.env.NOTION_TRANSFERS_DATABASE as string;
+  const monthId = params["month-id"];
 
   let response = await getPage(monthId);
 
@@ -25,20 +23,6 @@ export async function GET(
   }
 
   let month = response as Month;
-
-  const filter = {
-    property: "Month",
-    relation: {
-      contains: monthId,
-    },
-  };
-
-  const sorts = [
-    {
-      property: "Date",
-      direction: "descending" as "descending",
-    },
-  ];
 
   const expenses = await fetch(
     `${process.env.NEXT_PUBLIC_API}/expenses?month_id=${monthId}`
