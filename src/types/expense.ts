@@ -38,6 +38,18 @@ export interface Expense extends PageObjectResponse {
       }
     > &
     Record<
+      "Paid",
+      {
+        type: "status";
+        status: {
+          id: string;
+          name: string;
+          color: "default";
+        } | null;
+        id: string;
+      }
+    > &
+    Record<
       "Account Name",
       {
         type: "rollup";

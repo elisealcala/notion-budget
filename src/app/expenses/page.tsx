@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Expense, QueryResponseExpense } from "@/types/expense";
 import { Button } from "@/components/ui/button";
+import { formatCurrency } from "@/utils/currency";
 
 export default function Home() {
   const [data, setData] = useState<QueryResponseExpense | undefined>();
@@ -58,44 +59,24 @@ export default function Home() {
             <TableHead>Date</TableHead>
             <TableHead>Name</TableHead>
             <TableHead>Amount</TableHead>
-            <TableHead>Paid</TableHead>
             <TableHead>Account</TableHead>
             <TableHead>Category</TableHead>
+            <TableHead>Paid</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {data.results.map((item: Expense) => (
             <TableRow key={item.id}>
+              <TableCell>{item.properties["Date"].date?.start}</TableCell>
+              <TableCell>{item.properties["Name"].title[0].plain_text}</TableCell>
+              <TableCell>{formatCurrency(item.properties.Amount.number ?? 0)}</TableCell>
               <TableCell>
-                {item.properties["Date"].type === "date"
-                  ? item.properties["Date"].date?.start
-                  : ""}
+                {item.properties["Account Name"].rollup.array[0]?.title[0].plain_text}
               </TableCell>
               <TableCell>
-                {item.properties["Name"].type === "title"
-                  ? item.properties["Name"].title[0].plain_text
-                  : ""}
+                {item.properties["Category Name"].rollup.array[0]?.title[0].plain_text}
               </TableCell>
-              <TableCell>
-                {item.properties["Amount"].type === "number"
-                  ? item.properties["Amount"].number?.toFixed(2)
-                  : ""}
-              </TableCell>
-              <TableCell>
-                {item.properties["Paid"].type === "status"
-                  ? item.properties["Paid"].status?.name
-                  : ""}
-              </TableCell>
-              <TableCell>
-                {item.account?.properties["Name"].type === "title"
-                  ? item.account?.properties["Name"].title[0].plain_text
-                  : ""}
-              </TableCell>
-              <TableCell>
-                {item.category?.properties["Name"].type === "title"
-                  ? item.category?.properties["Name"].title[0].plain_text
-                  : ""}
-              </TableCell>
+              <TableCell>{item.properties["Paid"]?.status?.name}</TableCell>
             </TableRow>
           ))}
         </TableBody>
