@@ -127,26 +127,26 @@ export async function GET(request: NextRequest) {
       ...account,
       properties: {
         ...account.properties,
-        Incomes: {
-          type: "relation",
-          relation: allIncomes.filter((income) => income.account?.id === account.id),
-        },
-        Expenses: {
-          type: "relation",
-          relation: allExpenses.filter((expense) => expense.account?.id === account.id),
-        },
-        "To Transfers": {
-          type: "relation",
-          relation: allTransfers.filter(
-            (transfer) => transfer.toAccount?.id === account.id
-          ),
-        },
-        "From Transfer": {
-          type: "relation",
-          relation: allTransfers.filter(
-            (transfer) => transfer.fromAccount?.id === account.id
-          ),
-        },
+        // Incomes: {
+        //   type: "relation",
+        //   relation: allIncomes.filter((income) => income.account?.id === account.id),
+        // },
+        // Expenses: {
+        //   type: "relation",
+        //   relation: allExpenses.filter((expense) => expense.account?.id === account.id),
+        // },
+        // "To Transfers": {
+        //   type: "relation",
+        //   relation: allTransfers.filter(
+        //     (transfer) => transfer.toAccount?.id === account.id
+        //   ),
+        // },
+        // "From Transfer": {
+        //   type: "relation",
+        //   relation: allTransfers.filter(
+        //     (transfer) => transfer.fromAccount?.id === account.id
+        //   ),
+        // },
       },
     })),
   };
