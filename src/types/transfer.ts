@@ -8,6 +8,7 @@ import { Account } from "./account";
 export type Properties = "Date" | "Name" | "Amount" | "From Account" | "To Account";
 
 export interface Transfer extends PageObjectResponse {
+  in_trash: boolean;
   properties: Record<
     "Date",
     {

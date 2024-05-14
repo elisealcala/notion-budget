@@ -57,6 +57,7 @@ export interface Year extends PageObjectResponse {
         type: "relation";
         relation: Array<{
           id: string;
+          name: string;
         }>;
         id: string;
       }

@@ -3,7 +3,9 @@ import {
   PageObjectResponse,
   RichTextItemResponse,
 } from "@notionhq/client/build/src/api-endpoints";
-import { queryDatabase } from "@/lib/notion-utils";
+import { getPage, queryDatabase } from "@/lib/notion-utils";
+import { isFullPage } from "@notionhq/client";
+import { Month } from "@/types/month";
 
 export async function GET(request: NextRequest) {
   const yearDatabase = process.env.NOTION_YEAR_DATABASE as string;

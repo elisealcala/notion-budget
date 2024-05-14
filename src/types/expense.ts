@@ -9,6 +9,7 @@ import { Account } from "./account";
 export type Properties = "Amount" | "Category" | "Paid" | "Date" | "Account" | "Name";
 
 export interface Expense extends PageObjectResponse {
+  in_trash: boolean;
   properties: Record<
     "Date",
     {

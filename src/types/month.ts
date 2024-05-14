@@ -23,8 +23,11 @@ export interface Month extends PageObjectResponse {
     Record<
       "Savings",
       {
-        type: "title";
-        title: Array<RichTextItemResponse>;
+        type: "formula";
+        formula: {
+          type: "number";
+          number: number | null;
+        };
         id: string;
       }
     > &
@@ -34,6 +37,19 @@ export interface Month extends PageObjectResponse {
         type: "relation";
         id: string;
         relation: Expense[];
+        has_more: boolean;
+      }
+    > &
+    Record<
+      "Expenses Rollup",
+      {
+        type: "rollup";
+        id: string;
+        rollup: {
+          type: "number";
+          number: number | null;
+          function: "sum";
+        };
       }
     > &
     Record<
@@ -42,6 +58,19 @@ export interface Month extends PageObjectResponse {
         type: "relation";
         id: string;
         relation: Income[];
+        has_more: boolean;
+      }
+    > &
+    Record<
+      "Incomes Rollup",
+      {
+        type: "rollup";
+        id: string;
+        rollup: {
+          type: "number";
+          number: number | null;
+          function: "sum";
+        };
       }
     > &
     Record<
@@ -50,6 +79,7 @@ export interface Month extends PageObjectResponse {
         type: "relation";
         id: string;
         relation: Transfer[];
+        has_more: boolean;
       }
     > &
     Record<

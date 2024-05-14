@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Table,
   TableBody,
@@ -6,24 +8,27 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Month } from "@/types/month";
-import { QueryResponseYear, Year } from "@/types/year";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Month, QueryResponseMonth } from "@/types/month";
 import { formatCurrency } from "@/utils/currency";
+import { useEffect, useState } from "react";
 
-async function getMonth(): Promise<Month> {
-  const yearsResponse = await fetch(`${process.env.NEXT_PUBLIC_API}/years`);
+async function getMonths(): Promise<QueryResponseMonth> {
+  const monthsResponse = await fetch(`${process.env.NEXT_PUBLIC_API}/months`);
 
-  const years: QueryResponseYear = await yearsResponse.json();
+  const months: QueryResponseMonth = await monthsResponse.json();
 
-  const yearId = years.results[0].id;
+  return months;
+}
 
-  const yearReponse = await fetch(`${process.env.NEXT_PUBLIC_API}/years/${yearId}`);
-
-  const year: Year = await yearReponse.json();
-
-  const monthId = year.properties["Months"].relation[0].id;
-
-  let url = `${process.env.NEXT_PUBLIC_API}/years/${yearId}/${monthId}`;
+async function getMonth(monthId: string): Promise<Month> {
+  let url = `${process.env.NEXT_PUBLIC_API}/months/${monthId}`;
 
   const data = await fetch(url);
 
@@ -32,12 +37,49 @@ async function getMonth(): Promise<Month> {
   return response;
 }
 
-export default async function Home() {
-  const month = await getMonth();
+export default function Home() {
+  const [months, setMonths] = useState<Month[]>([]);
+  const [selectedMonthId, setSelectedMonthId] = useState<string>("");
+  const [selectedMonth, setSelectedMonth] = useState<Month | undefined>(undefined);
+
+  useEffect(() => {
+    (async () => {
+      const months = await getMonths();
+      setMonths(months.results);
+    })();
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      if (selectedMonthId) {
+        const month = await getMonth(selectedMonthId);
+        setSelectedMonth(month);
+      }
+    })();
+  }, [selectedMonthId]);
 
   return (
     <main>
-      <h2 className="text-xl font-bold">{month.properties.Name.title[0].plain_text}</h2>
+      <div className="flex w-full justify-between items-center">
+        <Select
+          onValueChange={(e) => {
+            setSelectedMonthId(e);
+          }}
+          value={selectedMonthId}
+          defaultValue="Months"
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Months" />
+          </SelectTrigger>
+          <SelectContent>
+            {months.map((month) => (
+              <SelectItem key={month.id} value={month.id}>
+                {month.properties.Name.title[0].plain_text}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
       <Table className="mt-10">
         <TableHeader>
           <TableRow>
@@ -49,7 +91,7 @@ export default async function Home() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {month.properties["Movements"].relation.map((movement) => {
+          {selectedMonth?.properties["Movements"].relation.map((movement) => {
             switch (movement.type) {
               case "expense":
                 return (
