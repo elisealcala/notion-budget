@@ -2,6 +2,14 @@ import { queryDatabase } from "@/lib/notion-utils";
 import { QueryDatabaseParameters } from "@notionhq/client/build/src/api-endpoints";
 import { NextRequest, NextResponse } from "next/server";
 
+function addFilter(options: Omit<QueryDatabaseParameters, "database_id">, filter: any) {
+  if (options.filter && "and" in options.filter) {
+    options.filter.and.push(filter);
+  } else {
+    options.filter = { and: [filter] } as any;
+  }
+}
+
 export async function GET(request: NextRequest) {
   const startCursor = request.nextUrl.searchParams.get("start_cursor") ?? undefined;
   const dateAfter = request.nextUrl.searchParams.get("date_after") ?? undefined;
@@ -26,64 +34,40 @@ export async function GET(request: NextRequest) {
   };
 
   if (monthId) {
-    const monthFilter = {
+    addFilter(options, {
       property: "Month",
       relation: {
         contains: monthId,
       },
-    };
-
-    if (options.filter && "and" in options.filter) {
-      options.filter.and.push(monthFilter);
-    } else {
-      options.filter = { and: [monthFilter] } as any;
-    }
+    });
   }
 
   if (accountId) {
-    const accountFilter = {
+    addFilter(options, {
       property: "Account",
       relation: {
         contains: accountId,
       },
-    };
-
-    if (options.filter && "and" in options.filter) {
-      options.filter.and.push(accountFilter);
-    } else {
-      options.filter = { and: [accountFilter] } as any;
-    }
+    });
   }
 
   if (categoryId) {
-    const categoryFilter = {
+    addFilter(options, {
       property: "Category",
       relation: {
         contains: categoryId,
       },
-    };
-
-    if (options.filter && "and" in options.filter) {
-      options.filter.and.push(categoryFilter);
-    } else {
-      options.filter = { and: [categoryFilter] } as any;
-    }
+    });
   }
 
   if (dateAfter && dateBefore) {
-    const dateFilter = {
+    addFilter(options, {
       property: "Date",
       date: {
         after: dateAfter,
         before: dateBefore,
       },
-    };
-
-    if (options.filter && "and" in options.filter) {
-      options.filter.and.push(dateFilter);
-    } else {
-      options.filter = { and: [dateFilter] };
-    }
+    });
   }
 
   if (startCursor) {

@@ -2,6 +2,14 @@ import { queryDatabase } from "@/lib/notion-utils";
 import { QueryDatabaseParameters } from "@notionhq/client/build/src/api-endpoints";
 import { NextRequest, NextResponse } from "next/server";
 
+function addFilter(options: Omit<QueryDatabaseParameters, "database_id">, filter: any) {
+  if (options.filter && "and" in options.filter) {
+    options.filter.and.push(filter);
+  } else {
+    options.filter = { and: [filter] } as any;
+  }
+}
+
 export async function GET(request: NextRequest) {
   const startCursor = request.nextUrl.searchParams.get("start_cursor") ?? undefined;
   const dateAfter = request.nextUrl.searchParams.get("date_after") ?? undefined;
@@ -24,34 +32,22 @@ export async function GET(request: NextRequest) {
   };
 
   if (monthId) {
-    const monthFilter = {
+    addFilter(options, {
       property: "Month",
       relation: {
         contains: monthId,
       },
-    };
-
-    if (options.filter && "and" in options.filter) {
-      options.filter.and.push(monthFilter);
-    } else {
-      options.filter = { and: [monthFilter] } as any;
-    }
+    });
   }
 
   if (dateAfter && dateBefore) {
-    const dateFilter = {
+    addFilter(options, {
       property: "Date",
       date: {
         after: dateAfter,
         before: dateBefore,
       },
-    };
-
-    if (options.filter && "and" in options.filter) {
-      options.filter.and.push(dateFilter);
-    } else {
-      options.filter = { and: [dateFilter] };
-    }
+    });
   }
 
   if (startCursor) {
