@@ -74,6 +74,8 @@ export async function GET(request: NextRequest) {
     options.start_cursor = startCursor;
   }
 
+  // console.log({ categoryId, options: options.filter?.and });
+
   const response = await queryDatabase(expenseDatabase, options);
 
   return NextResponse.json(response);

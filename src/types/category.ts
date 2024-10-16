@@ -1,25 +1,30 @@
 import {
   PageObjectResponse,
   QueryDatabaseResponse,
-} from '@notionhq/client/build/src/api-endpoints';
+  RichTextItemResponse,
+} from "@notionhq/client/build/src/api-endpoints";
 
 export type Properties =
-  | 'Expenses'
-  | 'Date'
-  | 'Total Expenses'
-  | 'Balance'
-  | 'Available/Exceeded'
-  | 'Total Incomes'
-  | 'Incomes'
-  | 'Dates'
-  | 'Budget'
-  | 'Budget Amount'
-  | 'Name';
+  | "Expenses"
+  | "Date"
+  | "Total Expenses"
+  | "Balance"
+  | "Available/Exceeded"
+  | "Total Incomes"
+  | "Incomes"
+  | "Dates"
+  | "Budget"
+  | "Budget Amount"
+  | "Name";
 
 export interface Category extends PageObjectResponse {
   properties: Record<
-    Properties,
-    PageObjectResponse['properties'][keyof PageObjectResponse['properties']]
+    "Name",
+    {
+      type: "title";
+      title: Array<RichTextItemResponse>;
+      id: string;
+    }
   >;
 }
 

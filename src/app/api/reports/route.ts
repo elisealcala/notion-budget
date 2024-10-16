@@ -87,9 +87,15 @@ export async function GET(request: NextRequest) {
     params,
   });
 
-  const movements = allExpenses
-    .concat(allIncomes, allTransfers)
-    .filter((movement) => !movement.archived && !movement.in_trash);
+  let movements: Movement[] = [];
+
+  if (categoryId) {
+    movements = allExpenses.concat(allIncomes);
+  } else {
+    movements = allExpenses.concat(allIncomes, allTransfers);
+  }
+
+  movements = movements.filter((movement) => !movement.archived && !movement.in_trash);
 
   const movementsSorted = movements.sort((a, b) => {
     let dateA = new Date(

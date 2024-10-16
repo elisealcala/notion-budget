@@ -18,6 +18,7 @@ import {
 import { Month, QueryResponseMonth } from "@/types/month";
 import { formatCurrency } from "@/utils/currency";
 import { useEffect, useState } from "react";
+import { Category, QueryResponseCategory } from "@/types/category";
 
 async function getMonths(): Promise<QueryResponseMonth> {
   const monthsResponse = await fetch(`${process.env.NEXT_PUBLIC_API}/months`);
@@ -27,8 +28,20 @@ async function getMonths(): Promise<QueryResponseMonth> {
   return months;
 }
 
-async function getMonth(monthId: string): Promise<Month> {
+async function getCategories(): Promise<QueryResponseCategory> {
+  const categoriesResponse = await fetch(`${process.env.NEXT_PUBLIC_API}/categories`);
+
+  const categories: QueryResponseCategory = await categoriesResponse.json();
+
+  return categories;
+}
+
+async function getMonth(monthId: string, categoryId?: string): Promise<Month> {
   let url = `${process.env.NEXT_PUBLIC_API}/months/${monthId}`;
+
+  if (categoryId) {
+    url = url + `?category_id=${categoryId}`;
+  }
 
   const data = await fetch(url);
 
@@ -39,28 +52,52 @@ async function getMonth(monthId: string): Promise<Month> {
 
 export default function Home() {
   const [months, setMonths] = useState<Month[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [selectedMonthId, setSelectedMonthId] = useState<string>("");
   const [selectedMonth, setSelectedMonth] = useState<Month | undefined>(undefined);
+  const [selectedCategory, setSelectedCategory] = useState<Category | undefined>(
+    undefined
+  );
+
+  const totalExpenses =
+    selectedMonth?.properties["Movements"].relation.reduce((a, b) => {
+      if (b.type === "expense") {
+        return a + (b.properties.Amount.number || 0);
+      }
+      return a;
+    }, 0) || 0;
+
+  const totalIncomes =
+    selectedMonth?.properties["Movements"].relation.reduce((a, b) => {
+      if (b.type === "income") {
+        return a + (b.properties.Amount.number || 0);
+      }
+      return a;
+    }, 0) || 0;
 
   useEffect(() => {
     (async () => {
       const months = await getMonths();
       setMonths(months.results);
+      const categories = await getCategories();
+      setCategories(categories.results);
     })();
   }, []);
 
   useEffect(() => {
     (async () => {
       if (selectedMonthId) {
-        const month = await getMonth(selectedMonthId);
+        const month = await getMonth(selectedMonthId, selectedCategory?.id);
         setSelectedMonth(month);
       }
     })();
-  }, [selectedMonthId]);
+  }, [selectedMonthId, selectedCategory]);
+
+  console.log({ totalExpenses, totalIncomes });
 
   return (
     <main>
-      <div className="flex w-full justify-between items-center">
+      <div className="grid grid-cols-2 w-full items-center">
         <Select
           onValueChange={(e) => {
             setSelectedMonthId(e);
@@ -79,6 +116,30 @@ export default function Home() {
             ))}
           </SelectContent>
         </Select>
+        <Select
+          onValueChange={(e) => {
+            setSelectedCategory(categories.find((category) => category.id === e));
+          }}
+          value={selectedCategory?.id}
+          defaultValue="Months"
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Months" />
+          </SelectTrigger>
+          <SelectContent>
+            {categories.map((category) => (
+              <SelectItem key={category.id} value={category.id}>
+                {category.properties.Name.title[0].plain_text}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="mt-5 flex flex-col">
+        <span className="text-sm"> Total Expenses = {totalExpenses}</span>
+        <span className="text-sm"> Total Incomes = {totalIncomes}</span>
+        <span className="text-sm"> Total = {totalIncomes - totalExpenses}</span>
       </div>
       <Table className="mt-10">
         <TableHeader>
